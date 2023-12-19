@@ -1,0 +1,6 @@
+@Web_Project_HostAddress = http://localhost:5092
+
+GET {{Web_Project_HostAddress}}/web_Project/
+Accept: application/json
+
+###
