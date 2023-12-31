@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Core.Exceptions;
+using Core.Resources;
 using Data.Entity;
 using Entity.Criteria;
 using Entity.DTO;
@@ -13,11 +15,17 @@ namespace Service.Service
     {
         protected readonly BaseRepository<TEntity> _baseRepository;
         protected readonly IMapper _mapper;
+        protected readonly ResourceManagerService<ErrorMessages> _resourceManagerService;
 
-        public BaseService(BaseRepository<TEntity> baseRepository, IMapper mapper)
+        public BaseService(
+            BaseRepository<TEntity> baseRepository,
+            IMapper mapper,
+            ResourceManagerService<ErrorMessages> resourceManagerService
+            )
         {
             _baseRepository = baseRepository;
             _mapper = mapper;
+            _resourceManagerService = resourceManagerService;
         }
 
         protected Expression<Func<TEntity, bool>> _PrepareFilter(BaseCriteria? criteria = null)
@@ -30,7 +38,7 @@ namespace Service.Service
 
                 if (criteria.Id > -1)
                 {
-                    filter = filter.And(entity => criteria.Id == entity.Id );
+                    filter = filter.And(entity => criteria.Id == entity.Id);
                 }
             }
             else
@@ -41,28 +49,24 @@ namespace Service.Service
             return filter;
         }
 
-        virtual public async Task<List<TEntity>> GetAllEntitiesAsync(List<string>? includes = null)
+        virtual public async Task<List<TEntity>> GetAllAsync(List<string>? includes = null)
         {
             return await _baseRepository.GetAllAsync(_PrepareFilter(), includes);
         }
 
-        virtual public List<TEntity> GetAllEntities(List<string>? includes = null)
-        {
-            return _baseRepository.GetAll(_PrepareFilter(), includes).ToList();
-        }
-
         public async Task<TEntity?> GetEntityByIdAsync(Expression<Func<TEntity, bool>> filter, List<string>? includes = null)
         {
-            return await _baseRepository.GetEntityByIdAsync(filter, includes);
-        }
-        public async Task<TEntity?> GetEntityByIdAsync(int id, List<string>? includes = null)
-        {
-            return await GetEntityByIdAsync(_PrepareFilter(new BaseCriteria() { Id = id }), includes);
+            return await _baseRepository.GetEntityAsync(filter, includes);
         }
 
-        public TEntity? GetEntityById(Expression<Func<TEntity, bool>> filter, List<string>? includes = null)
+        public async Task<TEntity?> GetEntityByIdAsync(int id, List<string>? includes = null)
         {
-            return _baseRepository.GetEntityById(filter, includes);
+            return await GetEntityAsync(_PrepareFilter(new BaseCriteria() { Id = id }), includes);
+        }
+
+        public async Task<TEntity?> GetEntityAsync(Expression<Func<TEntity, bool>> filter, List<string>? includes = null)
+        {
+            return await _baseRepository.GetEntityAsync(filter, includes);
         }
 
         public async Task AddEntityAsync(TEntity entity)
@@ -77,18 +81,22 @@ namespace Service.Service
 
         virtual public async Task DeleteEntityAsync(int id)
         {
-            var entity = GetEntityById(_PrepareFilter(new BaseCriteria() { Id = id }));
+            var entity = await GetEntityByIdAsync(_PrepareFilter(new BaseCriteria() { Id = id }));
 
             if (entity != null)
             {
                 await _baseRepository.DeleteEntityAsync(entity);
+            }
+            else
+            {
+                throw new BaseException(_resourceManagerService.GetString("NOT_FOUND_ENTITY"),ErrorCode.BusinessError);
             }
 
         }
 
         public async Task<List<TDto>> GetAllDtoAsync(List<string>? includes = null)
         {
-            var entities = await GetAllEntitiesAsync(includes);
+            var entities = await GetAllAsync(includes);
 
 
             return _mapper.Map<List<TDto>>(entities);

@@ -2,7 +2,6 @@
 using Data;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Repository
 {
@@ -20,7 +19,7 @@ namespace Repository
         private IQueryable<TEntity> _PrepareQuery(Expression<Func<TEntity, bool>>? filter, List<string>? includes = null)
         {
 
-            IQueryable<TEntity> query = _dbSet.AsQueryable<TEntity>();
+            IQueryable<TEntity> query = _dbSet.AsQueryable<TEntity>().AsNoTracking();
 
             if (filter != null)
             {
@@ -35,7 +34,8 @@ namespace Repository
 
             return query;
         }
-        public IQueryable<TEntity> GetAllInclude(IQueryable<TEntity> query, List<string> includesPaths)
+
+        private IQueryable<TEntity> GetAllInclude(IQueryable<TEntity> query, List<string> includesPaths)
         {
             return includesPaths.Where(s => !string.IsNullOrEmpty(s))
                 .Aggregate(query, (current, path) => current.Include(path).AsNoTracking());
@@ -46,31 +46,17 @@ namespace Repository
             return await _PrepareQuery(filter, includes).ToListAsync();
         }
 
-        public IEnumerable<TEntity> GetAll(Expression<Func<TEntity, bool>> filter, List<string>? includes = null)
-        {
-            return _PrepareQuery(filter, includes).ToList();
-        }
-
-        public async Task<TEntity?> GetEntityByIdAsync(Expression<Func<TEntity, bool>> filter, List<string>? includes = null)
+        public async Task<TEntity?> GetEntityAsync(Expression<Func<TEntity, bool>> filter, List<string>? includes = null)
         {
             return await _PrepareQuery(filter, includes).FirstOrDefaultAsync();
         }
 
-        public TEntity? GetEntityById(Expression<Func<TEntity, bool>> filter, List<string>? includes)
-        {
-            return _PrepareQuery(filter, includes).FirstOrDefault();
-        }
-
         public async Task AddEntityAsync(TEntity entity)
         {
-            await _dbSet.AddAsync(entity);
-            await _context.SaveChangesAsync();
-        }
+            _dbSet.Attach(entity); 
+            _context.Entry(entity).State = EntityState.Added; 
 
-        public void AddEntity(TEntity entity)
-        {
-            _dbSet.Add(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
         public async Task UpdateEntityAsync(TEntity entity)
@@ -79,16 +65,15 @@ namespace Repository
 
             if (existingEntity != null)
             {
-                _context.Entry(existingEntity).CurrentValues.SetValues(entity);
+                _context
+                    .Entry(existingEntity)
+                    .CurrentValues
+                    .SetValues(entity);
+
+                _context.Entry(existingEntity).State = EntityState.Modified;
+
                 await _context.SaveChangesAsync();
             }
-            
-        }
-
-        public void UpdateEntity(TEntity entity)
-        {
-            _dbSet.Update(entity);
-            _context.SaveChanges();
         }
 
         public async Task DeleteEntityAsync(TEntity entity)
@@ -101,28 +86,9 @@ namespace Repository
             }
         }
 
-        public void DeleteEntity(int id)
+        public async Task<int> GetAllCountAsync(Expression<Func<TEntity, bool>> filter)
         {
-            var entity = _dbSet.Find(id);
-            if (entity != null)
-            {
-                _dbSet.Remove(entity);
-                _context.SaveChanges();
-            }
-        }
-
-        public void DeleteEntity(TEntity entity)
-        {
-            if (entity != null)
-            {
-                entity.IsDeleted = true;
-                UpdateEntity(entity);  
-            }
-        }
-
-        public int GetAllCount(Expression<Func<TEntity, bool>> filter)
-        {
-            return _PrepareQuery(filter).Count();
+            return await _PrepareQuery(filter).CountAsync();
         }
 
     }

@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Core.Exceptions;
+using Core.Resources;
 using Data.Entity;
 using Entity.Criteria;
 using Entity.DTO;
@@ -14,9 +16,10 @@ namespace Service.Service
         public DepartmentService(
             BaseRepository<Department> repository,
             IMapper mapper,
+            ResourceManagerService<ErrorMessages> resourceManagerService,
             ClinicService clinicService
             )
-            : base(repository, mapper)
+            : base(repository, mapper, resourceManagerService)
         {
             _clinicService = clinicService;
         }
@@ -30,11 +33,11 @@ namespace Service.Service
 
             Expression<Func<Department, bool>> filter = _PrepareFilter(criteria);
 
-            var entity = await _baseRepository.GetEntityByIdAsync(filter);
+            var entity = await _baseRepository.GetEntityAsync(filter);
 
             if (entity != null)
             {
-                int clinicsCount = _clinicService.GetAllClincsCountByDepartmentId(id);
+                int clinicsCount = await _clinicService.GetAllClincsCountByDepartmentIdAsync(id);
                 if (clinicsCount > 0)
                 {
                     throw new Exception("This department has clinics!");

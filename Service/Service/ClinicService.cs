@@ -1,21 +1,26 @@
 ﻿using AutoMapper;
+using Core.Exceptions;
+using Core.Resources;
 using Data.Entity;
 using Entity.Criteria;
 using Entity.DTO;
 using Repository;
 using System.Linq.Expressions;
-
 namespace Service.Service
 {
     public class ClinicService : BaseService<Clinic, ClinicDto>
     {
-        public ClinicService(BaseRepository<Clinic> repository, IMapper mapper) : base(repository, mapper)
+        public ClinicService(
+            BaseRepository<Clinic> repository,
+            IMapper mapper,
+            ResourceManagerService<ErrorMessages> resourceManagerService
+            ) : base(repository, mapper, resourceManagerService)
         {
         }
 
         protected Expression<Func<Clinic, bool>> _PrepareClinicFilter(ClinicCriteria? criteria = null)
         {
-            
+
             Expression<Func<Clinic, bool>> filter = _PrepareFilter(criteria);
 
 
@@ -30,11 +35,11 @@ namespace Service.Service
             return filter;
         }
 
-        public int GetAllClincsCountByDepartmentId(int departmentId) 
+        public async Task<int> GetAllClincsCountByDepartmentIdAsync(int departmentId) 
         {
             ClinicCriteria criteria = new ClinicCriteria() { DepartmentId = departmentId };
 
-            int count = _baseRepository.GetAllCount(_PrepareClinicFilter(criteria));
+            int count = await _baseRepository.GetAllCountAsync(_PrepareClinicFilter(criteria));
             return count;
         }
     }
