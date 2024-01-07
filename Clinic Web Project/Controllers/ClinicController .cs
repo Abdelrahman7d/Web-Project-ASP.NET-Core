@@ -1,7 +1,8 @@
 using Data.Entity;
 using Entity.Core;
+using Entity.Criteria;
 using Microsoft.AspNetCore.Mvc;
-using Service.Service;
+using Business.Custom;
 
 namespace Clinic_Web_Project.Controllers;
 
@@ -9,25 +10,25 @@ namespace Clinic_Web_Project.Controllers;
 [Route("api/clinics")]
 public class ClinicController : ControllerBase
 {
-    private readonly ClinicService _clinicService;
+    private readonly ClinicBusiness _clinicService;
 
-    public ClinicController(ClinicService clinicService)
+    public ClinicController(ClinicBusiness clinicService)
     {
         _clinicService = clinicService;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllClinics(string? includes = null)
+    public async Task<IActionResult> GetAllClinics(ClinicCriteria? criteria = null, string? includes = null)
     {
 
-        var clinics = await _clinicService.GetAllDtoAsync(Helper.ToStringArray(includes));
+        var clinics = await _clinicService.GetAllDtoAsync(criteria, Helper.ToStringArray(includes));
         return Ok(clinics);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetClinicById(int id, string? includes = null)
     {
-        var clinic = await _clinicService.GetEntityIdDtoAsync(id, Helper.ToStringArray(includes));
+        var clinic = await _clinicService.FindEntityIdDtoAsync(id, Helper.ToStringArray(includes));
         if (clinic == null)
         {
             return NotFound();
@@ -50,7 +51,7 @@ public class ClinicController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateClinic(int id, [FromBody] Clinic clinic)
     {
-        var existingClinic = await _clinicService.GetEntityByIdAsync(id);
+        var existingClinic = await _clinicService.FindEntityByIdAsync(id);
         if (existingClinic == null)
         {
             return NotFound();
@@ -66,7 +67,7 @@ public class ClinicController : ControllerBase
     public async Task<IActionResult> DeleteClinic(int id)
     {
 
-        await _clinicService.DeleteEntityAsync(id);
+        await _clinicService.DeleteEntityByIdAsync(id);
 
         return NoContent();
     }

@@ -70,6 +70,24 @@ namespace Core.Exceptions {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This department has clinics!.
+        /// </summary>
+        public static string DEPARTMENT_HAS_CLINICS {
+            get {
+                return ResourceManager.GetString("DEPARTMENT_HAS_CLINICS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This department is not found!.
+        /// </summary>
+        public static string DEPARTMENT_NOT_FOUND {
+            get {
+                return ResourceManager.GetString("DEPARTMENT_NOT_FOUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Not found entity!.
         /// </summary>
         public static string NOT_FOUND_ENTITY {

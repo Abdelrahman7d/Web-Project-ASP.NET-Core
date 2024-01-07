@@ -120,6 +120,12 @@
   <data name="BASE_BUSINESS_ERROR" xml:space="preserve">
     <value>This is the base business error!</value>
   </data>
+  <data name="DEPARTMENT_HAS_CLINICS" xml:space="preserve">
+    <value>This department has clinics!</value>
+  </data>
+  <data name="DEPARTMENT_NOT_FOUND" xml:space="preserve">
+    <value>This department is not found!</value>
+  </data>
   <data name="NOT_FOUND_ENTITY" xml:space="preserve">
     <value>Not found entity!</value>
   </data>

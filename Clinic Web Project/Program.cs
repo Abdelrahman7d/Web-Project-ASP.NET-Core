@@ -1,3 +1,7 @@
+using Business;
+using Business.Custom;
+using Business.Query;
+using Core.Core;
 using Core.Exceptions;
 using Core.Resources;
 using Data;
@@ -5,27 +9,66 @@ using Microsoft.EntityFrameworkCore;
 using Repository;
 using Serilog;
 using Service.Mapper;
-using Service.Service;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 //Mapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
-builder.Services.AddControllers();
-  
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+//DbCotext configration
+IConfiguration appSettingsConfiguration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .Build();
 
-builder.Services.AddDbContext<AppDbContext>(options =>
+var configuration = builder.Configuration;
+
+string databaseType = appSettingsConfiguration["ClientSettings:DatabaseType"];
+
+if (databaseType.Equals("SqlServer"))
 {
-    var configuration = builder.Configuration; // Access the configuration from the builder
+   
+    builder.Services.AddDbContext<AppDbContext>(options =>
+    {
+        options.UseSqlServer(configuration.GetConnectionString("DefaultSqlConnection"));
+    });
+}
+else if (databaseType.Equals("OracleServer"))
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+    {
+        options.UseOracle(configuration.GetConnectionString("DefaultOracleConnection"));
+    });
+}
 
-    options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
-
-});
 
 
+
+// Needed Classes and Layers
+builder.Services.AddScoped(typeof(IRepositoryBase<,>), typeof(BaseRepository<,>));
+builder.Services.AddScoped(typeof(BaseBusiness<,>), typeof(BaseBusiness<,>));
+builder.Services.AddScoped(typeof(IQueryBuilder<,>), typeof(QueryBuilder<,>));
+
+//Custom Business Classes
+builder.Services.AddScoped<ClinicBusiness>();
+builder.Services.AddScoped<DepartmentBusiness>();
+
+//Resources
+builder.Services.AddSingleton<IResourceManagerService,ResourceManagerService<ErrorMessages>>();
+
+//File logger
+builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
+
+builder.Services.AddLogging(loggingBuilder =>
+          loggingBuilder.AddSerilog(dispose: true)
+);
+
+//Cors
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
@@ -36,26 +79,9 @@ builder.Services.AddCors(options =>
         ;
     });
 });
+
+//Swagger
 builder.Services.AddSwaggerGen();
-
-//BaseService and BaseRepo
-builder.Services.AddScoped(typeof(BaseRepository<>), typeof(BaseRepository<>));
-builder.Services.AddScoped(typeof(BaseService<,>), typeof(BaseService<,>));
-
-//Custom Services
-builder.Services.AddScoped<ClinicService>();
-builder.Services.AddScoped<DepartmentService>();
-
-//Resources
-builder.Services.AddSingleton<ResourceManagerService<ErrorMessages>>();
-
-//File logger
-builder.Host.UseSerilog((context, configuration) =>
-    configuration.ReadFrom.Configuration(context.Configuration));
-
-builder.Services.AddLogging(loggingBuilder =>
-          loggingBuilder.AddSerilog(dispose: true)
-);
 
 var app = builder.Build();
 

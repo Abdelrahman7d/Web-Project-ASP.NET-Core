@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Core.Core
 {
-    internal interface IResourceManagerService
+    public interface IResourceManagerService
     {
         string GetString(string key);
     }

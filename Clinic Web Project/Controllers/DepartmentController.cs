@@ -1,7 +1,7 @@
+using Business.Custom;
 using Data.Entity;
 using Entity.DTO;
 using Microsoft.AspNetCore.Mvc;
-using Service.Service;
 
 namespace Clinic_Web_Project.Controllers
 {
@@ -9,10 +9,10 @@ namespace Clinic_Web_Project.Controllers
     [Route("api/department")]
     public class DepartmentController : ControllerBase
     {
-        private readonly DepartmentService _departmentService;
-        private readonly ClinicService _clinicService;
+        private readonly DepartmentBusiness _departmentService;
+        private readonly ClinicBusiness _clinicService;
 
-        public DepartmentController(DepartmentService departmentService, ClinicService clinicService)
+        public DepartmentController(DepartmentBusiness departmentService, ClinicBusiness clinicService)
         {
             _departmentService = departmentService;
             _clinicService = clinicService;
@@ -28,7 +28,7 @@ namespace Clinic_Web_Project.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetDepartmentById(int id)
         {
-            var department = await _departmentService.GetEntityByIdAsync(id);
+            var department = await _departmentService.FindEntityByIdAsync(id);
             if (department == null)
             {
                 return NotFound();
@@ -47,13 +47,13 @@ namespace Clinic_Web_Project.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateDepartment(int id, [FromBody] Department department)
         {
-            var existingDepartment = await _departmentService.GetEntityByIdAsync(id);
+            var existingDepartment = await _departmentService.FindEntityByIdAsync(id);
             if (existingDepartment == null)
             {
                 return NotFound();
             }
 
-            department.Id = id; 
+            department.Id = id;
             await _departmentService.UpdateEntityAsync(department);
 
             return NoContent();
@@ -62,15 +62,9 @@ namespace Clinic_Web_Project.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteDepartment(int id)
         {
-            try
-            {
-                await _departmentService.DeleteEntityAsync(id);
-                return NoContent();
 
-            }catch (Exception ex)
-            {
-                return BadRequest(ex); 
-            }  
+            await _departmentService.DeleteEntityByIdAsync(id);
+            return Ok("Department was deleted!");
         }
     }
 }
