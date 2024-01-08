@@ -1,15 +1,12 @@
 ﻿using AutoMapper;
-using Business.Query;
+using Data.Query;
 using Core.Core;
 using Core.Exceptions;
-using Core.Resources;
-using Data.Entity;
+using Entity;
 using Entity.Criteria;
 using Entity.DTO;
-using Microsoft.EntityFrameworkCore;
-using Repository;
+using Data.Repository;
 using System.Linq.Expressions;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Business
 {

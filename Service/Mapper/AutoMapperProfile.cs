@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Data.Entity;
+using Entity;
 using Entity.DTO;
 using System;
 using System.Collections.Generic;

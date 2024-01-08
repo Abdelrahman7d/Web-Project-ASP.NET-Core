@@ -1,7 +1,7 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
 
-namespace Data.Entity
+namespace Entity
 {
     public class Department : BaseEntity
     {

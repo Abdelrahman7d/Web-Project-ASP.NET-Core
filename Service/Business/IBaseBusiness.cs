@@ -1,4 +1,4 @@
-﻿using Data.Entity;
+﻿using Entity;
 using Entity.Criteria;
 using Entity.DTO;
 using System;

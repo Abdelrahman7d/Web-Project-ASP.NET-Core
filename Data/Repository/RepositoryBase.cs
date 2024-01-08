@@ -1,9 +1,8 @@
 ﻿using Entity;
 using Data;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
-namespace Repository
+namespace Data.Repository
 {
     public class BaseRepository<TQuery,TEntity> : IRepositoryBase<TQuery,TEntity>
         where TQuery : IQueryable<TEntity>

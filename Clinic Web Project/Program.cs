@@ -1,12 +1,12 @@
 using Business;
 using Business.Custom;
-using Business.Query;
+using Data.Query;
 using Core.Core;
 using Core.Exceptions;
 using Core.Resources;
 using Data;
 using Microsoft.EntityFrameworkCore;
-using Repository;
+using Data.Repository;
 using Serilog;
 using Service.Mapper;
 

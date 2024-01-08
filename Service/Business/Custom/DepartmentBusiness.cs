@@ -1,14 +1,11 @@
 ﻿using AutoMapper;
-using Business.Query;
+using Data.Query;
 using Core.Core;
 using Core.Exceptions;
-using Core.Resources;
-using Data.Entity;
+using Entity;
 using Entity.Criteria;
 using Entity.DTO;
-using Microsoft.EntityFrameworkCore;
-using Repository;
-using System.Linq.Expressions;
+using Data.Repository;
 
 namespace Business.Custom
 {

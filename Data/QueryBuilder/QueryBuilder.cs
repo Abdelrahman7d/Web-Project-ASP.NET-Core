@@ -1,27 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using Data;
-using Data.Entity;
+using Entity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Business.Query
+namespace Data.Query
 {
-    public class QueryBuilder<TQuery, TEntity> : IQueryBuilder<TQuery,TEntity> 
+    public class QueryBuilder<TQuery, TEntity> : IQueryBuilder<TQuery, TEntity>
         where TQuery : IQueryable<TEntity>
         where TEntity : BaseEntity
     {
         private IQueryable<TEntity> _query;
 
+        AppDbContext _dbContext;
         public QueryBuilder(AppDbContext context)
         {
-            _query = context
+            _dbContext = context;
+            _query = _DefaultQuery();
+        }
+
+        private IQueryable<TEntity> _DefaultQuery()
+        {
+            return _dbContext
                 .Set<TEntity>()
                 .AsNoTracking();
-        }        
-
-        public IQueryBuilder<TQuery,TEntity> WithFilter(Expression<Func<TEntity, bool>> filter)
+        }
+        public IQueryBuilder<TQuery, TEntity> WithFilter(Expression<Func<TEntity, bool>> filter)
         {
 
             if (filter != null)
@@ -41,6 +44,16 @@ namespace Business.Query
             return this;
         }
 
-        public TQuery Build() => (TQuery) _query;
+        public TQuery Build() 
+        {
+            IQueryable<TEntity> queryToBuild = _query;
+
+            //By this step, We make sure to reset the _query value to the default value in the dbcontext
+            //to avoid any repetition between queries.
+            _query = _DefaultQuery();
+
+            return (TQuery) queryToBuild;
+            
+        }
     }
 }

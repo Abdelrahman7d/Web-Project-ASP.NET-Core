@@ -1,4 +1,4 @@
-using Data.Entity;
+using Entity;
 using Entity.Core;
 using Entity.Criteria;
 using Microsoft.AspNetCore.Mvc;

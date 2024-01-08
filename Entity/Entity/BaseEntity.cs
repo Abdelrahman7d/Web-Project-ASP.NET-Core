@@ -1,20 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Data.Entity
+
+namespace Entity
 {
-    public class BaseEntity
+
+    public interface IEntityCommonBase
     {
+        bool IsDeleted { set; get; }
+    }
+
+    public class EntityCommonBase : IEntityCommonBase
+    {
+        [DefaultValue(false)]
+        public bool IsDeleted { set; get; }
+    }
+
+    public interface IBaseEntity<TKey>
+    {
+        public TKey Id { get; set; }
+    }
+
+    public class BaseEntity<TKey> : EntityCommonBase, IBaseEntity<TKey>
+    {   
         [Key, Column(Order = 0)]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
-        [DefaultValue(false)]
-        public bool IsDeleted { get; set; } = false;
+        virtual public TKey Id { get; set; }
+
+    }
+
+    public class BaseEntity : BaseEntity<int>
+    {
+        public override int Id { set; get; } = -1;
     }
 }

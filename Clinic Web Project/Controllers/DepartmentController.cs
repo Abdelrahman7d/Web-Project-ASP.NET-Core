@@ -1,5 +1,5 @@
 using Business.Custom;
-using Data.Entity;
+using Entity;
 using Entity.DTO;
 using Microsoft.AspNetCore.Mvc;
 
